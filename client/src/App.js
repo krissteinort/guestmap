@@ -30,6 +30,20 @@ componentDidMount() {
       haveUsersLocation: true,
       zoom: 13
     });
+  }, () => {
+    fetch('https://ipapi.co/json')
+    .then(res => res.json())
+    .then(location => {
+      console.log(location);
+      this.setState({
+        location: {
+          lat: location.latitude,
+          lng: location.longitude
+        },
+          haveUsersLocation: true,
+          zoom: 13
+      });
+   });
   });
 }
 
