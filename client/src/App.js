@@ -5,12 +5,16 @@ import { Card, CardTitle, CardText, Button, Form, FormGroup, Label, Input } from
 
 import './App.css';
 
+//sets initial icon
+
 var myIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.5.1/dist/images/marker-icon-2x.png',
   iconSize: [25, 41],
   iconAnchor: [12.5, 41],
   popupAnchor: [0, -41]
 });
+
+// sets initial map on page load before users give location
 
 class App extends Component {
   state = {
@@ -22,6 +26,7 @@ class App extends Component {
     zoom: 2,
   }
 componentDidMount() {
+  // gets user's location
   navigator.geolocation.getCurrentPosition((position) => {
     this.setState({
       location: {
@@ -32,6 +37,8 @@ componentDidMount() {
       zoom: 13
     });
   }, () => {
+    // if users deny browser access location, still want to approximate the location.
+    // this does so via IP Address API
     fetch('https://ipapi.co/json')
     .then(res => res.json())
     .then(location => {
@@ -42,11 +49,30 @@ componentDidMount() {
           lng: location.longitude
         },
           haveUsersLocation: true,
-          zoom: 13
+          zoom: 13,
+          userMessage: {
+            name: '',
+            message: ''
+          }
       });
    });
   });
 }
+
+formSubmitted = (event) => {
+  event.preventDefault();
+  console.log(this.state.userMessage);
+}
+
+valueChanged = (event) => {
+  const { name, value } = event.target;
+  this.setState((prevState) => ({
+    userMessage: {
+      ...prevState.userMessage,
+      [name]: value
+    }
+  })
+)}
 
   render() {
   const position = [this.state.location.lat, this.state.location.lng]
@@ -72,15 +98,26 @@ componentDidMount() {
       <CardTitle>Welcome to GuestMap!</CardTitle>
       <CardText>Leave a message from your location!</CardText>
       <CardText>Thanks for visiting!</CardText>
-      <Form>
+      <Form onSubmit={this.formSubmitted}>
         <FormGroup>
           <Label for="name">Name</Label>
-          <Input type="text" name="name" id="name" placeholder="Enter your name:" />
+          <Input
+            onChange={this.valueChanged} 
+            type="text" 
+            name="name" 
+            id="name" 
+            placeholder="Enter your name:" />
         </FormGroup>
         <FormGroup>
           <Label for="message">Message</Label>
-          <Input type="text" name="message" id="message" placeholder="Enter your message:" />
+          <Input 
+            onChange={this.valueChanged}
+            type="textarea" 
+            name="message" 
+            id="message" 
+            placeholder="Enter your message:" />
         </FormGroup>
+        <Button color="success" type="submit" className="submitButton" disabled={!this.state.haveUsersLocation}>Submit</Button>{' '}
       </Form>
     </Card>
   </div>
