@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import L from 'leaflet';
+import Joi from 'joi';
 import { Map, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Card, CardTitle, CardText, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 
@@ -14,6 +15,15 @@ var myIcon = L.icon({
   popupAnchor: [0, -41]
 });
 
+// sets validation schema
+
+const schema = Joi.object().keys({
+  name: Joi.string().regex(/^[-'a-zA-ZÀ-ÖØ-öø-ÿ]{1,100}$/).required(),
+  message: Joi.string().min(1).max(500).required()
+});
+
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000/api/v1/messages' : 'prodURLHere';
+
 // sets initial map on page load before users give location
 
 class App extends Component {
@@ -24,6 +34,10 @@ class App extends Component {
     },
     haveUsersLocation: false,
     zoom: 2,
+    userMessage: {
+      name: '',
+      message: ''
+    }
   }
 componentDidMount() {
   // gets user's location
@@ -59,9 +73,38 @@ componentDidMount() {
   });
 }
 
+formValid = () => {
+  const userMessage = {
+    name: this.state.userMessage.name,
+    message: this.state.userMessage.message
+  };
+  const result = Joi.validate(userMessage, schema);
+
+  return !result.error && this.state.haveUsersLocation ? true : false;
+}
+
 formSubmitted = (event) => {
   event.preventDefault();
   console.log(this.state.userMessage);
+
+  if (this.formValid()) {
+    fetch('API_URL', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: this.state.userMessage.name,
+        message: this.state.userMessage.message,
+        latitude: this.state.location.lat,
+        longitude: this.state.location.lng,
+      })
+      .then(res => res.json())
+      .then(message => {
+        console.log(message);
+      })
+    })
+  }
 }
 
 valueChanged = (event) => {
@@ -117,7 +160,7 @@ valueChanged = (event) => {
             id="message" 
             placeholder="Enter your message:" />
         </FormGroup>
-        <Button color="success" type="submit" className="submitButton" disabled={!this.state.haveUsersLocation}>Submit</Button>{' '}
+        <Button color="success" type="submit" className="submitButton" disabled={!this.formValid()}>Submit</Button>{' '}
       </Form>
     </Card>
   </div>
