@@ -17,7 +17,7 @@ describe('GET /api/v1', () => {
 describe('POST /api/v1/messages', () => {
   it('responds with inserted message', (done) => {
     const requestObj = {
-      name: 'CJ',
+      name: 'Kris',
       message: 'This app is so cool!',
       latitude: -90,
       longitude: 180
