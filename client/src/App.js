@@ -88,7 +88,7 @@ formSubmitted = (event) => {
   console.log(this.state.userMessage);
 
   if (this.formValid()) {
-    fetch('API_URL', {
+  fetch(API_URL, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -99,13 +99,14 @@ formSubmitted = (event) => {
         latitude: this.state.location.lat,
         longitude: this.state.location.lng,
       })
+    })
       .then(res => res.json())
       .then(message => {
         console.log(message);
-      })
-    })
+      });
+    }
   }
-}
+
 
 valueChanged = (event) => {
   const { name, value } = event.target;
